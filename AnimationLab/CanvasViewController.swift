@@ -67,6 +67,10 @@ class CanvasViewController: UIViewController {
         newlyCreatedFace.transform = newlyCreatedFace.transform.rotated(by: rotation)
         gestureRecognizer.rotation = 0
     }
+    @objc func deleteFace(sender: UITapGestureRecognizer) {
+        let imageView = sender.view as! UIImageView
+        imageView.removeFromSuperview()
+    }
     @IBAction func didPanTray(_ sender: UIPanGestureRecognizer) {
         let translation = sender.translation(in: self.view)
         let velocity = sender.velocity(in: self.view)
@@ -118,9 +122,12 @@ class CanvasViewController: UIViewController {
                 let newPanGestureRecognizer = UIPanGestureRecognizer(target: self, action: #selector(self.didPanInCanvas(sender:)))
                 let newPinchGestureRecongizer = UIPinchGestureRecognizer(target: self, action: #selector(self.didPinchInCanvas(sender:)))
                 let rotateGestureRecognizer = UIRotationGestureRecognizer(target: self, action: #selector(self.didRotate(gestureRecognizer:)))
+                let doubleTapGestureRecongnizer = UITapGestureRecognizer(target: self, action: #selector(self.deleteFace(sender:)))
+                doubleTapGestureRecongnizer.numberOfTapsRequired = 2
                 newlyCreatedFace.addGestureRecognizer(newPanGestureRecognizer)
                 newlyCreatedFace.addGestureRecognizer(newPinchGestureRecongizer)
                 newlyCreatedFace.addGestureRecognizer(rotateGestureRecognizer)
+                newlyCreatedFace.addGestureRecognizer(doubleTapGestureRecongnizer)
                 UIView.animate(withDuration: 0.2, animations: {
                     self.newlyCreatedFace.transform = self.newlyCreatedFace.transform.scaledBy(x: 1.5, y: 1.5)
                 })
