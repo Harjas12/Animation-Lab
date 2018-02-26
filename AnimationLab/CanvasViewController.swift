@@ -38,6 +38,7 @@ class CanvasViewController: UIViewController {
                 newlyCreatedFace = sender.view as! UIImageView
                 newlyCreatedFaceOriginalCenter = newlyCreatedFace.center
                 previousScale = newlyCreatedFace.frame.size.height / sizeOfOriginal
+                
                 let yScale: CGFloat = 2
                 UIView.animate(withDuration: 0.2, animations: {
                     self.newlyCreatedFace.transform = CGAffineTransform(scaleX: 2, y: yScale)
