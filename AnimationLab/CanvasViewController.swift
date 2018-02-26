@@ -20,6 +20,8 @@ class CanvasViewController: UIViewController {
     var newlyCreatedFace: UIImageView!
     var newlyCreatedFaceOriginalCenter: CGPoint!
     
+    let hapticFeedBack = UIImpactFeedbackGenerator()
+    
     override func viewDidLoad() {
         super.viewDidLoad()
         trayDownOffset = 205
@@ -43,6 +45,7 @@ class CanvasViewController: UIViewController {
                 UIView.animate(withDuration: 0.2, animations: {
                     self.newlyCreatedFace.transform = self.newlyCreatedFace.transform.scaledBy(x: 0.5, y: 0.5)
                 })
+                hapticFeedBack.impactOccurred()
                 break
             default:
                 break
@@ -52,8 +55,16 @@ class CanvasViewController: UIViewController {
         print("did pinch called")
         let scale = sender.scale
         let imageView = sender.view as! UIImageView
-        imageView.transform = CGAffineTransform(from: imageView.transform).scaledBy(x: scale, y: scale)
-        sender.scale = 1
+        switch sender.state {
+            case .changed:
+                imageView.transform = CGAffineTransform().scaledBy(x: scale, y: scale)
+                break
+            case.ended:
+                sender.scale = 1
+                hapticFeedBack.impactOccurred()
+            default:
+                break
+        }
     }
     @IBAction func didPanTray(_ sender: UIPanGestureRecognizer) {
         let translation = sender.translation(in: self.view)
@@ -66,13 +77,14 @@ class CanvasViewController: UIViewController {
                 trayView.center = CGPoint(x: trayOrignalPoint.x, y: trayOrignalPoint.y + translation.y)
                 break
             case .ended:
-                UIView.animate(withDuration: 0.25, delay: 0, usingSpringWithDamping: 0.4, initialSpringVelocity: 1, options: [], animations: {
+                UIView.animate(withDuration: 0.4, delay: 0, usingSpringWithDamping: 0.5, initialSpringVelocity: 0.5, options: [], animations: {
                     if velocity.y > 0 {
                         self.trayView.center = self.trayDown
                     } else {
                         self.trayView.center = self.trayUP
                     }
                 })
+                hapticFeedBack.impactOccurred()
             default:
                 break
         }
@@ -84,7 +96,6 @@ class CanvasViewController: UIViewController {
             case .began:
                 let imageView = gestureRecongizer.view as! UIImageView
                 newlyCreatedFace = UIImageView(image: imageView.image)
-                newlyCreatedFace.isUserInteractionEnabled = true
                 self.view.addSubview(newlyCreatedFace)
                 newlyCreatedFace.center = imageView.center
                 newlyCreatedFace.center.y += trayView.frame.origin.y
@@ -99,12 +110,14 @@ class CanvasViewController: UIViewController {
                 break
             case .ended:
                 let newPanGestureRecognizer = UIPanGestureRecognizer(target: self, action: #selector(didPanInCanvas(sender:)))
-                let newPinchGestureRecognizer = UIPinchGestureRecognizer(target: self, action: #selector(didPinchInCanvas(sender:)))
+                let newPinchGestureRecognizer = UIPinchGestureRecognizer(target: self, action: #selector(didPinchInCanvas(sender:))
                 newlyCreatedFace.addGestureRecognizer(newPanGestureRecognizer)
                 newlyCreatedFace.addGestureRecognizer(newPinchGestureRecognizer)
+                newlyCreatedFace.isUserInteractionEnabled = true
                 UIView.animate(withDuration: 0.2, animations: {
                     self.newlyCreatedFace.transform = self.newlyCreatedFace.transform.scaledBy(x: 0.5, y: 0.5)
                 })
+                hapticFeedBack.impactOccurred()
                 break
             default:
                 break
