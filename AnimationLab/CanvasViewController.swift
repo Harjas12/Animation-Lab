@@ -22,9 +22,38 @@ class CanvasViewController: UIViewController {
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        trayDownOffset = 180
+        trayDownOffset = 205
         trayUP = trayView.center
         trayDown = CGPoint(x: trayView.center.x, y: trayView.center.y + trayDownOffset)
+    }
+    @objc func didPanInCanvas(sender: UIPanGestureRecognizer) {
+        let translation = sender.translation(in: self.view)
+        switch sender.state {
+            case .began:
+                newlyCreatedFace = sender.view as! UIImageView
+                newlyCreatedFaceOriginalCenter = newlyCreatedFace.center
+                let yScale: CGFloat = 2
+                UIView.animate(withDuration: 0.2, animations: {
+                    self.newlyCreatedFace.transform = CGAffineTransform(scaleX: 2, y: yScale)
+                })
+            case .changed:
+                newlyCreatedFace.center = CGPoint(x: newlyCreatedFaceOriginalCenter.x + translation.x, y: newlyCreatedFaceOriginalCenter.y + translation.y)
+                break
+            case .ended:
+                UIView.animate(withDuration: 0.2, animations: {
+                    self.newlyCreatedFace.transform = self.newlyCreatedFace.transform.scaledBy(x: 0.5, y: 0.5)
+                })
+                break
+            default:
+                break
+        }
+    }
+    @objc func didPinchInCanvas(sender: UIPinchGestureRecognizer) {
+        print("did pinch called")
+        let scale = sender.scale
+        let imageView = sender.view as! UIImageView
+        imageView.transform = CGAffineTransform(from: imageView.transform).scaledBy(x: scale, y: scale)
+        sender.scale = 1
     }
     @IBAction func didPanTray(_ sender: UIPanGestureRecognizer) {
         let translation = sender.translation(in: self.view)
@@ -37,7 +66,7 @@ class CanvasViewController: UIViewController {
                 trayView.center = CGPoint(x: trayOrignalPoint.x, y: trayOrignalPoint.y + translation.y)
                 break
             case .ended:
-                UIView.animate(withDuration: 0.4, animations: {
+                UIView.animate(withDuration: 0.25, delay: 0, usingSpringWithDamping: 0.4, initialSpringVelocity: 1, options: [], animations: {
                     if velocity.y > 0 {
                         self.trayView.center = self.trayDown
                     } else {
@@ -55,15 +84,27 @@ class CanvasViewController: UIViewController {
             case .began:
                 let imageView = gestureRecongizer.view as! UIImageView
                 newlyCreatedFace = UIImageView(image: imageView.image)
+                newlyCreatedFace.isUserInteractionEnabled = true
                 self.view.addSubview(newlyCreatedFace)
                 newlyCreatedFace.center = imageView.center
                 newlyCreatedFace.center.y += trayView.frame.origin.y
                 newlyCreatedFaceOriginalCenter = newlyCreatedFace.center
+                let yScale: CGFloat = 2
+                UIView.animate(withDuration: 0.2, animations: {
+                    self.newlyCreatedFace.transform = CGAffineTransform(scaleX: 2, y: yScale)
+                })
                 break
             case .changed:
                 newlyCreatedFace.center = CGPoint(x: newlyCreatedFaceOriginalCenter.x + translation.x, y: newlyCreatedFaceOriginalCenter.y + translation.y)
                 break
             case .ended:
+                let newPanGestureRecognizer = UIPanGestureRecognizer(target: self, action: #selector(didPanInCanvas(sender:)))
+                let newPinchGestureRecognizer = UIPinchGestureRecognizer(target: self, action: #selector(didPinchInCanvas(sender:)))
+                newlyCreatedFace.addGestureRecognizer(newPanGestureRecognizer)
+                newlyCreatedFace.addGestureRecognizer(newPinchGestureRecognizer)
+                UIView.animate(withDuration: 0.2, animations: {
+                    self.newlyCreatedFace.transform = self.newlyCreatedFace.transform.scaledBy(x: 0.5, y: 0.5)
+                })
                 break
             default:
                 break
