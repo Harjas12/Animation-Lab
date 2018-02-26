@@ -11,6 +11,7 @@ import UIKit
 class CanvasViewController: UIViewController {
     
     @IBOutlet weak var trayView: UIView!
+    @IBOutlet weak var arrowView: UIImageView!
     
     var trayOrignalPoint: CGPoint!
     var trayDownOffset: CGFloat!
@@ -19,6 +20,8 @@ class CanvasViewController: UIViewController {
     
     var newlyCreatedFace: UIImageView!
     var newlyCreatedFaceOriginalCenter: CGPoint!
+    var previousScale: CGFloat = 1
+    let sizeOfOriginal: CGFloat = 120
     
     let hapticFeedBack = UIImpactFeedbackGenerator()
     
@@ -34,6 +37,7 @@ class CanvasViewController: UIViewController {
             case .began:
                 newlyCreatedFace = sender.view as! UIImageView
                 newlyCreatedFaceOriginalCenter = newlyCreatedFace.center
+                previousScale = newlyCreatedFace.frame.size.height / sizeOfOriginal
                 let yScale: CGFloat = 2
                 UIView.animate(withDuration: 0.2, animations: {
                     self.newlyCreatedFace.transform = CGAffineTransform(scaleX: 2, y: yScale)
@@ -43,7 +47,7 @@ class CanvasViewController: UIViewController {
                 break
             case .ended:
                 UIView.animate(withDuration: 0.2, animations: {
-                    self.newlyCreatedFace.transform = self.newlyCreatedFace.transform.scaledBy(x: 0.5, y: 0.5)
+                    self.newlyCreatedFace.transform = self.newlyCreatedFace.transform.scaledBy(x: self.previousScale, y: self.previousScale)
                 })
                 hapticFeedBack.impactOccurred()
                 break
@@ -52,19 +56,16 @@ class CanvasViewController: UIViewController {
         }
     }
     @objc func didPinchInCanvas(sender: UIPinchGestureRecognizer) {
-        print("did pinch called")
         let scale = sender.scale
-        let imageView = sender.view as! UIImageView
-        switch sender.state {
-            case .changed:
-                imageView.transform = CGAffineTransform().scaledBy(x: scale, y: scale)
-                break
-            case.ended:
-                sender.scale = 1
-                hapticFeedBack.impactOccurred()
-            default:
-                break
-        }
+        newlyCreatedFace = sender.view as! UIImageView
+        newlyCreatedFace.transform = newlyCreatedFace.transform.scaledBy(x: scale, y: scale)
+        sender.scale = 1
+    }
+    @objc func didRotate(gestureRecognizer: UIRotationGestureRecognizer) {
+        let rotation = gestureRecognizer.rotation
+        newlyCreatedFace = gestureRecognizer.view as! UIImageView
+        newlyCreatedFace.transform = newlyCreatedFace.transform.rotated(by: rotation)
+        gestureRecognizer.rotation = 0
     }
     @IBAction func didPanTray(_ sender: UIPanGestureRecognizer) {
         let translation = sender.translation(in: self.view)
@@ -80,8 +81,10 @@ class CanvasViewController: UIViewController {
                 UIView.animate(withDuration: 0.4, delay: 0, usingSpringWithDamping: 0.5, initialSpringVelocity: 0.5, options: [], animations: {
                     if velocity.y > 0 {
                         self.trayView.center = self.trayDown
+                        self.arrowView.transform = CGAffineTransform(rotationAngle: .pi)
                     } else {
                         self.trayView.center = self.trayUP
+                        self.arrowView.transform = CGAffineTransform(rotationAngle: (2 * .pi))
                     }
                 })
                 hapticFeedBack.impactOccurred()
@@ -104,18 +107,22 @@ class CanvasViewController: UIViewController {
                 UIView.animate(withDuration: 0.2, animations: {
                     self.newlyCreatedFace.transform = CGAffineTransform(scaleX: 2, y: yScale)
                 })
+                newlyCreatedFace.isUserInteractionEnabled = true
+                newlyCreatedFace.clipsToBounds = true
+                newlyCreatedFace.contentMode = .scaleAspectFill
                 break
             case .changed:
                 newlyCreatedFace.center = CGPoint(x: newlyCreatedFaceOriginalCenter.x + translation.x, y: newlyCreatedFaceOriginalCenter.y + translation.y)
                 break
             case .ended:
-                let newPanGestureRecognizer = UIPanGestureRecognizer(target: self, action: #selector(didPanInCanvas(sender:)))
-                let newPinchGestureRecognizer = UIPinchGestureRecognizer(target: self, action: #selector(didPinchInCanvas(sender:))
+                let newPanGestureRecognizer = UIPanGestureRecognizer(target: self, action: #selector(self.didPanInCanvas(sender:)))
+                let newPinchGestureRecongizer = UIPinchGestureRecognizer(target: self, action: #selector(self.didPinchInCanvas(sender:)))
+                let rotateGestureRecognizer = UIRotationGestureRecognizer(target: self, action: #selector(self.didRotate(gestureRecognizer:)))
                 newlyCreatedFace.addGestureRecognizer(newPanGestureRecognizer)
-                newlyCreatedFace.addGestureRecognizer(newPinchGestureRecognizer)
-                newlyCreatedFace.isUserInteractionEnabled = true
+                newlyCreatedFace.addGestureRecognizer(newPinchGestureRecongizer)
+                newlyCreatedFace.addGestureRecognizer(rotateGestureRecognizer)
                 UIView.animate(withDuration: 0.2, animations: {
-                    self.newlyCreatedFace.transform = self.newlyCreatedFace.transform.scaledBy(x: 0.5, y: 0.5)
+                    self.newlyCreatedFace.transform = self.newlyCreatedFace.transform.scaledBy(x: 1.5, y: 1.5)
                 })
                 hapticFeedBack.impactOccurred()
                 break

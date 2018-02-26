@@ -100,6 +100,7 @@
                         <viewLayoutGuide key="safeArea" id="6Tk-OE-BBY"/>
                     </view>
                     <connections>
+                        <outlet property="arrowView" destination="Dev-Aj-lUA" id="TOK-rr-VGj"/>
                         <outlet property="trayView" destination="21e-Gg-iwO" id="q4M-yq-aLh"/>
                     </connections>
                 </viewController>
