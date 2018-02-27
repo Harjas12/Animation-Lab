@@ -36,8 +36,8 @@ The following **stretch** user stories are implemented:
 
 Please list two areas of the assignment you'd like to **discuss further with your peers** during the next class (examples include better ways to implement something, how to extend your app in certain ways, etc):
 
-1. How to programatically autocontraint rules.
-2. Why are autoconstraint rules not respected when ui is changed programatically.
+1. How to programatically build autoconstraint rules.
+2. Why are autoconstraint rules not respected when UI is changed programatically.
 
 ## Video Walkthrough
 
